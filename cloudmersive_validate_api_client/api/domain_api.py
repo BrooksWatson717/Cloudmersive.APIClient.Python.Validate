@@ -19,6 +19,27 @@ import re  # noqa: F401
 import six
 
 from cloudmersive_validate_api_client.api_client import ApiClient
+from functools import wraps
+
+
+def deprecated_async(func):
+    """A decorator, that let's us keep our old API, but deprecate it"""
+    @wraps(func)
+    def inner(*args, **kwargs):
+        if 'async' in kwargs:
+            if 'asynchronous' in kwargs:
+                raise ValueError('cannot use both async and asynchronous '
+                                 'keyword arguments! the latter obsoletes the first.')
+            warnings.warn('async keyword argumnt is deprecated, '
+                          'use asynchronous instead', DeprecationWarning)
+            kwargs['asynchronous'] = kwargs.pop('async')
+        return func(*args, **kwargs)
+    return inner
+
+
+@deprecated_async
+def awesome_func(foo, bar, asynchronous=False):
+    """People can pass async or asynchronous"""
 
 
 class DomainApi(object):
